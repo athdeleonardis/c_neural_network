@@ -24,4 +24,6 @@ neural_network_t *neural_network_create(int input_size, int output_size, int hid
 void neural_network_delete(neural_network_t *);
 void neural_network_print(neural_network_t *);
 void neural_network_layers_randomize(neural_network_t *);
+matrix_t **neural_network_evaluate(neural_network_t *, int n_cases, matrix_t **inputs);
+
 #endif

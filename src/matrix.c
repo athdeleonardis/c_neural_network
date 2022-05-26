@@ -75,3 +75,12 @@ matrix_t *matrix_multiply(matrix_t *mat_A, matrix_t *mat_B) {
     }
     return mat_C;
 }
+
+matrix_t *matrix_multiply_add(matrix_t *mat_A, matrix_t *mat_B, matrix_t *mat_X) {
+    matrix_t *mat_C = matrix_multiply(mat_A, mat_B);
+    cnd_make_error(mat_C->cols != mat_X->cols || mat_C->rows != mat_X->rows, "Attempting add different sized matrices");
+    for (int i = 0; i < mat_C->cols * mat_C->rows; i++) {
+        mat_C->data[i] += mat_X->data[i];
+    }
+    return mat_C;
+}
