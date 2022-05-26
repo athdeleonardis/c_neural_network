@@ -4,7 +4,12 @@ Simple neural network written in c.
 
 Uses a custom matrix library to store data and do computations.
 
-Currently only consists of said custom matrix library.
+Currently the neural network library itself only allows for creating and loading models,
+not for training and testing them.
+
+# Build
+
+Run make.
 
 # License
 
