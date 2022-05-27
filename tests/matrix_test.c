@@ -33,5 +33,4 @@ int main() {
     matrix_print(mat_A);
     matrix_print(mat_B);
     matrix_print(mat_C);
-
 }
