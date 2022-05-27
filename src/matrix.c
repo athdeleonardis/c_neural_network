@@ -36,6 +36,13 @@ matrix_t *matrix_create(int cols, int rows) {
     return mat;
 }
 
+matrix_t *matrix_copy(matrix_t *mat) {
+    matrix_t *new_mat = matrix_create(mat->cols, mat->rows);
+    for (int i = 0; i < new_mat->cols * new_mat->rows; i++)
+        new_mat->data[i] = mat->data[i];
+    return new_mat;
+}
+
 void matrix_delete(matrix_t *mat) {
     free(mat->data);
     free(mat);

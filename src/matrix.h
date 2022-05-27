@@ -14,6 +14,7 @@ typedef struct {
 } matrix_t;
 
 matrix_t *matrix_create(int cols, int rows);
+matrix_t *matrix_copy(matrix_t *);
 void matrix_delete(matrix_t *);
 void matrix_print(matrix_t *);
 void matrix_set(matrix_t *, int col, int row, double);
