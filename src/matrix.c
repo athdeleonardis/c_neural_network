@@ -84,3 +84,9 @@ matrix_t *matrix_multiply_add(matrix_t *mat_A, matrix_t *mat_B, matrix_t *mat_X)
     }
     return mat_C;
 }
+
+void matrix_apply_function(matrix_t *mat, matrix_map_t map) {
+    for (int i = 0; i < mat->cols * mat->rows; i++) {
+        mat->data[i] = map(mat->data[i]);
+    }
+}

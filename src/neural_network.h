@@ -1,6 +1,7 @@
 #ifndef NEURAL_NETWORK
 #define NEURAL_NETWORK
 
+#include "activation_function.h"
 #include "matrix.h"
 
 //
@@ -10,6 +11,7 @@
 typedef struct {
     matrix_t *weights;
     matrix_t *biases;
+    activation_function_t activation_function;
 } layer_t;
 
 typedef struct {
@@ -20,7 +22,7 @@ typedef struct {
     layer_t *layers;
 } neural_network_t;
 
-neural_network_t *neural_network_create(int input_size, int output_size, int hidden_layer_count, int *hidden_layer_sizes);
+neural_network_t *neural_network_create(int input_size, int output_size, int hidden_layer_count, int *hidden_layer_sizes, char **activation_functions);
 void neural_network_delete(neural_network_t *);
 void neural_network_print(neural_network_t *);
 void neural_network_layers_randomize(neural_network_t *);

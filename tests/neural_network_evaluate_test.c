@@ -12,7 +12,8 @@ int main(int argc, char *argv) {
 
     printf("Step 1: Create the neural network\n");
     int hidden_layer_sizes[2] = {4, 3};
-    neural_network_t *nn = neural_network_create(2, 2, 2, hidden_layer_sizes);
+    char *activation_functions[3] = { "sigmoid", "sigmoid", "sigmoid" };
+    neural_network_t *nn = neural_network_create(2, 2, 2, hidden_layer_sizes, activation_functions);
     neural_network_layers_randomize(nn);
     neural_network_print(nn);
     

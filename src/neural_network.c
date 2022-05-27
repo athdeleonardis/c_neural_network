@@ -9,13 +9,13 @@
 // Auxilliary Definitions
 //
 
-void neural_network_layers_create(neural_network_t *);
+void neural_network_layers_create(neural_network_t *, char **activation_functions);
 
 //
 // Auxilliary Implementations
 //
 
-void neural_network_layers_create(neural_network_t *nn) {
+void neural_network_layers_create(neural_network_t *nn, char **activation_functions) {
     nn->layers = (layer_t *)malloc((nn->hidden_layer_count + 1) * sizeof(layer_t));
 
     int cols = nn->input_size;
@@ -28,6 +28,7 @@ void neural_network_layers_create(neural_network_t *nn) {
         
         nn->layers[i].weights = matrix_create(cols, rows);
         nn->layers[i].biases = matrix_create(1, rows);
+        activation_function_copy(activation_function_get(activation_functions[i]), &nn->layers[i].activation_function);
 
         cols = rows;
     }
@@ -37,7 +38,7 @@ void neural_network_layers_create(neural_network_t *nn) {
 // "neural_network.h" Implementations
 //
 
-neural_network_t *neural_network_create(int input_size, int output_size, int hidden_layer_count, int *hidden_layer_sizes) {
+neural_network_t *neural_network_create(int input_size, int output_size, int hidden_layer_count, int *hidden_layer_sizes, char **activation_functions) {
     neural_network_t *nn = (neural_network_t *)malloc(sizeof(neural_network_t));
     nn->input_size = input_size;
     nn->output_size = output_size;
@@ -46,7 +47,7 @@ neural_network_t *neural_network_create(int input_size, int output_size, int hid
     for (int i = 0; i < nn->hidden_layer_count; i++)
         nn->hidden_layer_sizes[i] = hidden_layer_sizes[i];
     
-    neural_network_layers_create(nn);
+    neural_network_layers_create(nn, activation_functions);
     return nn;
 }
 
@@ -67,7 +68,7 @@ void neural_network_print(neural_network_t *nn) {
         printf("%d ", nn->hidden_layer_sizes[i]);
     printf("\n");
     for (int i = 0; i < nn->hidden_layer_count + 1; i++) {
-        printf("Layer %d:\nWeights: ", i);
+        printf("Layer %d:\nActivation Function: %s\nWeights: ", i, nn->layers[i].activation_function.name);
         matrix_print(nn->layers[i].weights);
         printf("Biases: ");
         matrix_print(nn->layers[i].biases);
@@ -92,6 +93,7 @@ matrix_t **neural_network_evaluate(neural_network_t *nn, int n_cases, matrix_t *
         for (int j = 0; j < nn->hidden_layer_count + 1; j++) {
             matrix_t *old = output_i;
             output_i = matrix_multiply_add(nn->layers[j].weights, output_i, nn->layers[j].biases);
+            matrix_apply_function(output_i, nn->layers[j].activation_function.function);
             if (j)
                 matrix_delete(old);
         }

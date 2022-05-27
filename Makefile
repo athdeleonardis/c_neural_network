@@ -1,11 +1,11 @@
 EXE=c_neural_network
 CC=gcc
-CFLAGS=--std=c99
+CFLAGS=--std=c99 -lm
 SRC_DIR=src
 OBJ_DIR=obj
 TST_DIR=tests
 BLD_DIR=build
-OBJS = error.o matrix.o neural_network.o neural_network_file.o load_file.o random.o
+OBJS = error.o matrix.o neural_network.o neural_network_file.o load_file.o random.o activation_function.o
 TSTS = $(addprefix $(BLD_DIR)/$(TST_DIR)/, matrix_test neural_network_file_test neural_network_evaluate_test)
 DEPS=$(addprefix $(OBJ_DIR)/, $(OBJS))
 
