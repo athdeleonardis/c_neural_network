@@ -30,10 +30,12 @@ int main() {
     matrix_t *mat_A = matrix_from_cmd("A");
     matrix_t *mat_B = matrix_from_cmd("B");
     matrix_t *mat_C = matrix_multiply(mat_A, mat_B);
+
     matrix_print(mat_A);
     matrix_print(mat_B);
     matrix_print(mat_C);
+
     matrix_delete(mat_A);
     matrix_delete(mat_B);
-    matrix_delete(mat_B);
+    matrix_delete(mat_C);
 }

@@ -32,8 +32,8 @@ int main(int argc, char *argv) {
     for (int i = 0; i < N_CASES; i++) {
         matrix_print(outputs[i]);
 
-        free(inputs[i]);
-        free(outputs[i]);
+        matrix_delete(inputs[i]);
+        matrix_delete(outputs[i]);
     }
 
     free(inputs);

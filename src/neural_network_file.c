@@ -55,7 +55,7 @@ neural_network_t *neural_network_load(FILE *file, int is_dynamic) {
     // static vs dynamic model save
     char type;
     fread(&type, sizeof(char), 1, file);
-    cnd_make_error(is_dynamic && type != 'd', "Attempting to load dynamic model from static savefile");
+    cnd_make_error(is_dynamic && type != 'd', "Attempting to load dynamic model from static model savefile");
 
     // input_size output_size hidden_layer_count
     int buffer[3];
@@ -65,7 +65,7 @@ neural_network_t *neural_network_load(FILE *file, int is_dynamic) {
     int *hidden_layer_sizes = (int *)malloc(buffer[2] * sizeof(int));
     fread(hidden_layer_sizes, sizeof(int), buffer[2], file);
 
-    char **activation_function_names = (char **)malloc(sizeof(char *));
+    char **activation_function_names = (char **)malloc(buffer[2] * sizeof(char *));
     for (int i = 0; i < buffer[2] + 1; i++) {
         activation_function_names[i] = (char *)malloc(ACTIVATION_FUNCTION_NAME_SIZE * sizeof(char));
         fread(activation_function_names[i], sizeof(char), ACTIVATION_FUNCTION_NAME_SIZE, file);
@@ -74,7 +74,7 @@ neural_network_t *neural_network_load(FILE *file, int is_dynamic) {
     neural_network_t *nn = neural_network_create(buffer[0], buffer[1], buffer[2], hidden_layer_sizes, activation_function_names);
 
     free(hidden_layer_sizes);
-    for (int i = 0; i < buffer[2]; i++)
+    for (int i = 0; i < buffer[2] + 1; i++)
         free(activation_function_names[i]);
     free(activation_function_names);
 

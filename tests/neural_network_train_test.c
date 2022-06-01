@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
     neural_network_print(nn);
 
     matrix_t **outputs_after = neural_network_evaluate(nn, 4, inputs);
+    neural_network_delete(nn);
     for (int i = 0; i < 4; i++) {
         printf("Case %d:\nInput: ", i);
         matrix_print(inputs[i]);
