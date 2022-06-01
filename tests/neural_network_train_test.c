@@ -5,12 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N_TRAINING_CASES 1000
+#define N_TRAINING_CASES 1000000
 
 int main(int argc, char *argv[]) {
     printf("Step 1: Create the neural network\n");
-    int hidden_layer_sizes[2] = { 2 };
-    char *activation_functions[3] = { "sigmoid", "sigmoid", "sigmoid" };
+    int hidden_layer_sizes[1] = { 4 };
+    char *activation_functions[2] = { "sigmoid", "sigmoid" };
     neural_network_t *nn = neural_network_create(2, 1, 1, hidden_layer_sizes, activation_functions);
     neural_network_layers_randomize(nn);
     neural_network_print(nn);

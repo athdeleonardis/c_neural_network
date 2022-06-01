@@ -93,7 +93,7 @@ matrix_t **neural_network_evaluate(neural_network_t *nn, int n_cases, matrix_t *
         for (int j = 0; j < nn->hidden_layer_count + 1; j++) {
             matrix_t *old = output_i;
             output_i = matrix_multiply_add(nn->layers[j].weights, output_i, nn->layers[j].biases);
-            matrix_apply_function(output_i, nn->layers[j].activation_function.function);
+            matrix_apply_function_i(output_i, nn->layers[j].activation_function.function);
             if (j)
                 matrix_delete(old);
         }
