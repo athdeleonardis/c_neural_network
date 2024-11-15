@@ -20,9 +20,25 @@ void get_error(neural_network_t *, matrix_t *output, neural_network_eval_t);
 void apply_eval(neural_network_t *, matrix_t *input, matrix_t *output, neural_network_eval_t, double p);
 
 //
+// 'neural_network_train.h' Implementations
+//
+
+void neural_network_train_case(neural_network_t *nn, matrix_t *input, matrix_t *output, double p) {
+    neural_network_eval_t eval = new_eval(nn->hidden_layer_count);
+    get_eval(nn, input, eval);
+    get_error(nn, output, eval);
+    apply_eval(nn, input, output, eval, p);
+    del_eval(eval, nn->hidden_layer_count);
+}
+
+//
 // Auxilliary Implementations
 //
 
+/**
+ * For each layer of the neural network, create a datastructure to store the outputs at each layer,
+ * the derivatives of each output, and the errors of each output.
+*/
 neural_network_eval_t new_eval(int hidden_layer_count) {
     neural_network_eval_t eval = {};
     eval.activation_derivative = (matrix_t **)malloc((hidden_layer_count + 1)*sizeof(matrix_t));
@@ -42,6 +58,9 @@ void del_eval(neural_network_eval_t eval, int hidden_layer_count) {
     free(eval.errors);
 }
 
+/**
+ * Get the outputs at each layer, and their respective derivatives.
+*/
 void get_eval(neural_network_t *nn, matrix_t *input, neural_network_eval_t eval) {
     matrix_t *prev_outputs;
     for (int i = 0; i < nn->hidden_layer_count + 1; i++) {
@@ -58,6 +77,9 @@ void get_eval(neural_network_t *nn, matrix_t *input, neural_network_eval_t eval)
     }
 }
 
+/**
+ * Get the error of each every output at each layer.
+*/
 void get_error(neural_network_t *nn, matrix_t *output, neural_network_eval_t eval) {
     // Output layer error
     eval.errors[nn->hidden_layer_count] = matrix_copy(eval.activation_function[nn->hidden_layer_count]);
@@ -66,13 +88,16 @@ void get_error(neural_network_t *nn, matrix_t *output, neural_network_eval_t eva
     }
     matrix_multiply_scalar_i(eval.errors[nn->hidden_layer_count], eval.activation_derivative[nn->hidden_layer_count]);
 
-    // Hidden layer error
+    // Hidden layer error, propogated backwards via the activation function derivative
     for (int i = nn->hidden_layer_count; i > 0; i--) {
         eval.errors[i-1] = matrix_multiply(eval.errors[i], nn->layers[i].weights);
         matrix_multiply_scalar_i(eval.errors[i-1], eval.activation_derivative[i-1]);
     }
 }
 
+/**
+ * Apply the error and output values to each weight of the neural network.
+*/
 void apply_eval(neural_network_t *nn, matrix_t *input, matrix_t *output, neural_network_eval_t eval, double p) {
     for (int k = 0; k < nn->hidden_layer_count + 1; k++) {
         matrix_t *weights = nn->layers[k].weights;
@@ -95,16 +120,4 @@ void apply_eval(neural_network_t *nn, matrix_t *input, matrix_t *output, neural_
             );
         }
     }
-}
-
-//
-// 'neural_network_train.h' Implementations
-//
-
-void neural_network_train_case(neural_network_t *nn, matrix_t *input, matrix_t *output, double p) {
-    neural_network_eval_t eval = new_eval(nn->hidden_layer_count);
-    get_eval(nn, input, eval);
-    get_error(nn, output, eval);
-    apply_eval(nn, input, output, eval, p);
-    del_eval(eval, nn->hidden_layer_count);
 }

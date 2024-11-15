@@ -98,7 +98,7 @@ matrix_t *matrix_multiply(matrix_t *mat_A, matrix_t *mat_B) {
     return mat_C;
 }
 
-matrix_t *matrix_multiply_scalar_i(matrix_t *mat_A, matrix_t *mat_B) {
+void matrix_multiply_scalar_i(matrix_t *mat_A, matrix_t *mat_B) {
     cnd_make_error(matrix_compare_size(mat_A, mat_B), "Attemping to scalar multiply icompatible matrices");
     for (int i = 0; i < mat_A->cols * mat_A->rows; i++)
         mat_A->data[i] *= mat_B->data[i];
@@ -116,13 +116,15 @@ void matrix_add_i(matrix_t *mat_A, matrix_t* mat_B) {
         mat_A->data[i] += mat_B->data[i];
 }
 
+
 void matrix_apply_function_i(matrix_t *mat, matrix_map_t map) {
     for (int i = 0; i < mat->cols * mat->rows; i++)
         mat->data[i] = map(mat->data[i]);
 }
 
-void matrix_apply_function(matrix_t *mat, matrix_map_t map) {
+matrix_t *matrix_apply_function(matrix_t *mat, matrix_map_t map) {
     matrix_t *new_mat = matrix_create(mat->cols, mat->rows);
     for (int i = 0; i < mat->cols * mat->rows; i++)
         new_mat->data[i] = map(mat->data[i]);
+    return new_mat;
 }

@@ -11,6 +11,10 @@ void random_init() {
     srand(time(NULL));
 }
 
+void random_init_seeded(int seed) {
+    srand(seed);
+}
+
 double random_double_between(double min, double max) {
     return min + ((double) rand()) / RAND_MAX * (max - min);
 }

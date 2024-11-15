@@ -5,6 +5,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/**
+ * This file trains a neural network against the simple case of the XOR gate, i.e.
+ * (0, 0) -> 0
+ * (1, 0) -> 1
+ * (0, 1) -> 1
+ * (1, 1) -> 0
+ * 
+ * This highlights the non-linear behaviour of the neural network, as XOR is a non-linear function of two inputs.
+*/
+
 #define N_TRAINING_CASES 1000000
 
 int main(int argc, char *argv[]) {
@@ -45,7 +55,7 @@ int main(int argc, char *argv[]) {
 
     neural_network_print(nn);
 
-    matrix_t **outputs_after = neural_network_evaluate(nn, 4, inputs);
+    matrix_t **outputs_calculated = neural_network_evaluate(nn, 4, inputs);
     neural_network_delete(nn);
     for (int i = 0; i < 4; i++) {
         printf("Case %d:\nInput: ", i);
@@ -53,17 +63,28 @@ int main(int argc, char *argv[]) {
         printf("Output expected: ");
         matrix_print(outputs[i]);
         printf("Output: ");
-        matrix_print(outputs_after[i]);
+        matrix_print(outputs_calculated[i]);
     }
+
+    printf("Errors: [");
+    for (int i = 0; i < 4; i++) {
+        double error_percentage = (matrix_get(outputs_calculated[i], 1, 0) - matrix_get(outputs[i], 1, 0)) * 100;
+        if (error_percentage < 0)
+            error_percentage = -error_percentage;
+        if (i)
+            printf(", ");
+        printf("%.01f%%", error_percentage);
+    }
+    printf("]\n");
 
     for (int i = 0; i < 4; i++) {
         matrix_delete(inputs[i]);
         matrix_delete(outputs[i]);
         matrix_delete(outputs_before[i]);
-        matrix_delete(outputs_after[i]);
+        matrix_delete(outputs_calculated[i]);
     }
     free(inputs);
     free(outputs);
     free(outputs_before);
-    free(outputs_after);
+    free(outputs_calculated);
 }

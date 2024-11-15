@@ -15,6 +15,10 @@ typedef struct {
     matrix_map_t derivative;
 } activation_function_t;
 
+/**
+ * Returns the activation function mapped to by the inputted name.
+ * @param name Valid inputs: "sigmoid", "relu", "leaky_relu".
+*/
 activation_function_t activation_function_get(const char *name);
 void activation_function_copy(activation_function_t src, activation_function_t *dest);
 

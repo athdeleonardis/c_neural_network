@@ -5,6 +5,6 @@
 
 #include <stdio.h>
 
-FILE *load_file(const char *filename);
+FILE *file_load(const char *filename);
 
 #endif
