@@ -31,4 +31,4 @@ All files in the 'src' directory are necessary to use the neural network.
 
 # License
 
-[MIT](https://choosealicense.com/licenses/mit/)
+[MIT](./LICENSE.md)
