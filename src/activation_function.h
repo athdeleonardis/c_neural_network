@@ -4,7 +4,7 @@
 #include "matrix.h"
 
 //
-// 'neural_network_activation_functions.h' Definitions
+// 'activation_function.h' definitions
 //
 
 #define ACTIVATION_FUNCTION_NAME_SIZE 16

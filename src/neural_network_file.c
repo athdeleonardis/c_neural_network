@@ -10,7 +10,7 @@
 #define NEURAL_NETWORK_FILE_TYPE_DYNAMIC 'd'
 
 //
-// Auxilliary Definitions
+// 'neural_network_file.c' definitions
 //
 
 void neural_network_save_internal_type(FILE *file, char type);
@@ -22,7 +22,7 @@ neural_network_t *neural_network_load_internal_structure(FILE *file);
 void neural_network_load_internal_layers(FILE *file, neural_network_t *nn);
 
 //
-// 'neural_network_files.h' Implementations
+// 'neural_network_file.h' implementations
 //
 
 void neural_network_save_static(neural_network_t *nn, const char *filename) {
@@ -37,7 +37,8 @@ void neural_network_save_dynamic(neural_network_t *nn, const char *filename) {
     neural_network_save_internal_type(file, NEURAL_NETWORK_FILE_TYPE_DYNAMIC);
     neural_network_save_internal_structure(file, nn);
     neural_network_save_internal_layers(file, nn);
-    fclose(file);
+    if (fclose(file))
+        printf("Error when closing file?\n");
 }
 
 neural_network_t *neural_network_load_static(const char *filename) {
@@ -58,7 +59,7 @@ neural_network_t *neural_network_load_dynamic(const char *filename) {
 }
 
 //
-// Auxilliary Implementations
+// 'neural_network_file.c' implementations
 //
 
 void neural_network_save_internal_type(FILE *file, char type) {
@@ -93,24 +94,26 @@ void neural_network_load_internal_type(FILE *file, char type) {
 }
 
 neural_network_t *neural_network_load_internal_structure(FILE *file) {
-    // input_size output_size hidden_layer_count
-    int buffer[3];
-    fread(buffer, sizeof(buffer), 1, file);
+    int buffer[3] = { 0, 0, 0 };
+    fread(buffer, sizeof(int), 3, file);
+    int input_size = buffer[0];
+    int output_size = buffer[1];
+    int hidden_layer_count = buffer[2];
 
     // hidden_layer_sizes
-    int *hidden_layer_sizes = (int *)malloc(buffer[2] * sizeof(int));
-    fread(hidden_layer_sizes, sizeof(int), buffer[2], file);
+    int *hidden_layer_sizes = (int *)malloc(hidden_layer_count * sizeof(int));
+    fread(hidden_layer_sizes, sizeof(int), hidden_layer_count, file);
 
-    char **activation_function_names = (char **)malloc(buffer[2] * sizeof(char *));
-    for (int i = 0; i < buffer[2] + 1; i++) {
+    char **activation_function_names = (char **)malloc(hidden_layer_count * sizeof(char *));
+    for (int i = 0; i < hidden_layer_count + 1; i++) {
         activation_function_names[i] = (char *)malloc(ACTIVATION_FUNCTION_NAME_SIZE * sizeof(char));
         fread(activation_function_names[i], sizeof(char), ACTIVATION_FUNCTION_NAME_SIZE, file);
     }
 
-    neural_network_t *nn = neural_network_create(buffer[0], buffer[1], buffer[2], hidden_layer_sizes, activation_function_names);
+    neural_network_t *nn = neural_network_create(input_size, output_size, hidden_layer_count, hidden_layer_sizes, activation_function_names);
 
     free(hidden_layer_sizes);
-    for (int i = 0; i < buffer[2] + 1; i++)
+    for (int i = 0; i < hidden_layer_count + 1; i++)
         free(activation_function_names[i]);
     free(activation_function_names);
 

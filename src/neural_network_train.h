@@ -4,7 +4,7 @@
 #include "neural_network.h"
 
 //
-// 'neural_network_train.h' Definitions
+// 'neural_network_train.h' definitions
 //
 
 /**

@@ -4,7 +4,7 @@
 #include <time.h>
 
 //
-// 'random.h' Implementations
+// 'random.h' implementations
 //
 
 void random_init() {

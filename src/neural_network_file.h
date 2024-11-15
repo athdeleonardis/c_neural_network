@@ -3,6 +3,10 @@
 
 #include "neural_network.h"
 
+//
+// 'neural_network_file.h' definitions
+//
+
 /**
  * Save the input, output and hidden layer sizes of the inputted neural network.
  * @param nn The neural network struct data to be saved.

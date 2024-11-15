@@ -6,8 +6,10 @@
 #include <string.h>
 
 //
-// Auxilliary Definitions
+// 'activation_function.c' definitions
 //
+
+void format_activation_function_name(activation_function_t af, const char *name);
 
 /**
  * Maps from (-inf,+inf) to (-1,1). Similarly shaped to a tangent function.
@@ -20,7 +22,7 @@ double leaky_relu(double);
 double leaky_relu_derivative(double);
 
 //
-// 'neural_network_activation_functions.h' Implementations
+// 'activation_function.h' implementations
 //
 
 // TODO: Parsing tree
@@ -48,7 +50,7 @@ void activation_function_copy(activation_function_t src, activation_function_t *
 }
 
 //
-// Auxilliary Implementations
+// 'activation_function.c' implementations
 //
 
 double sigmoid(double x) {

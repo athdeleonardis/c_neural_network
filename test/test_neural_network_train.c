@@ -18,6 +18,8 @@
 #define N_TRAINING_CASES 1000000
 
 int main(int argc, char *argv[]) {
+    random_init();
+    
     printf("Step 1: Create the neural network\n");
     int hidden_layer_sizes[1] = { 4 };
     char *activation_functions[2] = { "sigmoid", "sigmoid" };

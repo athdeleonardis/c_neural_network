@@ -6,13 +6,13 @@
 #include <stdlib.h>
 
 //
-// Auxilliary Definitions
+// 'neural_network.c' definitions
 //
 
 void neural_network_layers_create(neural_network_t *, char **activation_functions);
 
 //
-// Auxilliary Implementations
+// 'neural_network.c' implementations
 //
 
 void neural_network_layers_create(neural_network_t *nn, char **activation_functions) {
@@ -35,7 +35,7 @@ void neural_network_layers_create(neural_network_t *nn, char **activation_functi
 }
 
 //
-// "neural_network.h" Implementations
+// 'neural_network.h' implementations
 //
 
 neural_network_t *neural_network_create(int input_size, int output_size, int hidden_layer_count, int *hidden_layer_sizes, char **activation_functions) {
