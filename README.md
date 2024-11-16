@@ -12,9 +12,11 @@ can be set layer by layer.
 
 # Build
 
-Run make.
+In the project's root directory, run 'make'.
 
-The object files will output into the folder 'obj/', and the compiled test programs in 'build/test/'.
+The object files will output into the folder 'obj/'. \
+Tests will output into the folder 'build/test/'. \
+Apps will output into the folder 'build/app/'. \
 
 # License
 

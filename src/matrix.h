@@ -40,6 +40,12 @@ void matrix_delete(matrix_t *mat);
 void matrix_print(matrix_t *mat);
 
 /**
+ * Print the matrix dimensions to the console.
+ * @param mat The matrix to be printed.
+*/
+void matrix_print_short(matrix_t *mat);
+
+/**
  * Set the element of the matrix at (col, row) to be 'val'.
  * @param mat The matrix to emplace a value into.
  * @param col The column of the value to be set.

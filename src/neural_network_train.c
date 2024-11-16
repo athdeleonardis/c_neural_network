@@ -1,4 +1,5 @@
 #include "neural_network_train.h"
+#include "error.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +19,8 @@ typedef struct {
     double *all_data;
 } neural_network_eval_t;
 
+void check_input_size(neural_network_t *nn, matrix_t *mat);
+void check_output_size(neural_network_t *nn, matrix_t *output);
 neural_network_eval_t new_eval(neural_network_t *nn);
 void set_eval_layer(neural_network_layer_eval_t *eval_layer, double *data, int *data_pointer, int array_size);
 void del_eval(neural_network_eval_t eval);
@@ -30,6 +33,8 @@ void apply_eval(neural_network_t *, matrix_t *input, matrix_t *output, neural_ne
 //
 
 void neural_network_train_case(neural_network_t *nn, matrix_t *input, matrix_t *output, double p) {
+    check_input_size(nn, input);
+    check_output_size(nn, output);
     neural_network_eval_t eval = new_eval(nn);
     get_eval(nn, input, eval);
     get_error(nn, output, eval);
@@ -40,6 +45,14 @@ void neural_network_train_case(neural_network_t *nn, matrix_t *input, matrix_t *
 //
 // 'neural_network_train.c' implementations
 //
+
+void check_input_size(neural_network_t *nn, matrix_t *input) {
+    cnd_make_error(input->cols != 1 && input->rows != nn->input_size, "Input matrix size incompatible with neural network.\n");
+}
+
+void check_output_size(neural_network_t *nn, matrix_t *output) {
+    cnd_make_error(output->cols != 1 && output->rows != nn->output_size, "Output matrix size incompatible with neural network.\n");
+}
 
 /**
  * For each layer of the neural network, create a datastructure to store the outputs at each layer,
@@ -100,7 +113,7 @@ void get_eval(neural_network_t *nn, matrix_t *input, neural_network_eval_t eval)
             prev_outputs = &eval.layers[i-1].outputs;
         else
             prev_outputs = input;
-        
+
         matrix_multiply_o(nn->layers[i].weights, prev_outputs, &eval.layers[i].outputs);
         matrix_add_i(&eval.layers[i].outputs, nn->layers[i].biases);
         matrix_transpose_o(&eval.layers[i].outputs, &eval.layers[i].derivatives);
@@ -116,8 +129,11 @@ void get_eval(neural_network_t *nn, matrix_t *input, neural_network_eval_t eval)
 void get_error(neural_network_t *nn, matrix_t *output, neural_network_eval_t eval) {
     int final_layer = nn->hidden_layer_count;
     // Output layer error
-    matrix_copy_o(&eval.layers[final_layer].outputs, &eval.layers[final_layer].errors);
-    matrix_subtract_i(&eval.layers[final_layer].errors, output);
+    matrix_transpose_o(&eval.layers[final_layer].outputs, &eval.layers[final_layer].errors);
+    // Need to subtract expected output from actual output, but their dimensions are the tranpose of eachother.
+    for (int i = 0; i < eval.layers[final_layer].errors.cols; i++) {
+        eval.layers[final_layer].errors.data[i] -= output->data[i];
+    }
     matrix_multiply_scalar_i(&eval.layers[final_layer].errors, &eval.layers[final_layer].derivatives);
 
     // Hidden layer error, propogated backwards via the activation function derivative

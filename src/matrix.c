@@ -87,6 +87,10 @@ void matrix_print(matrix_t *mat) {
     printf("]\n");
 }
 
+void matrix_print_short(matrix_t *mat) {
+    printf("Matrix: %dx%d\n", mat->cols, mat->rows);
+}
+
 void matrix_set(matrix_t *mat, int col, int row, double data) {
     mat->data[matrix_cell_to_index(mat, col, row)] = data;
 }
