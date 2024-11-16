@@ -28,6 +28,17 @@ typedef struct {
 matrix_t *matrix_create(int cols, int rows);
 
 /**
+ * Initialize a matrix with the inputted columns and rows, with data from the inputted array and offset.
+ * Increments the offset by the size of the array (cols * rows).
+ * @param mat The matrix to be initialized.
+ * @param cols The columns of the matrix.
+ * @param rows The rows of the matrix.
+ * @param array The array containing the data of the matrix.
+ * @param offset The position in the array of the matrix's data. It gets incremented by (cols * rows).
+*/
+void matrix_initialize_from_array(matrix_t *mat, int cols, int rows, double *array, int *offset);
+
+/**
  * Delete the matrix to prevent memory leaks.
  * @param mat The matrix to be deleted.
 */

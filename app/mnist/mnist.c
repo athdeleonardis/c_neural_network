@@ -18,16 +18,13 @@
 #include "../../src/neural_network.h"
 #include "mnist.h"
 
-#define MAGIC_NUMBER_1 2049
-#define MAGIC_NUMBER_2 2051
-#define TEST_DATA_COUNT 10000
-
-#define READ_BUFFER_SIZE 128
-#define PIXEL_MAX 255.0
-
 //
 // 'mnist.c' definitions
 //
+
+#define MAGIC_NUMBER_1 2049
+#define MAGIC_NUMBER_2 2051
+#define PIXEL_MAX 255.0
 
 int32_t flip_endianness(int32_t value);
 

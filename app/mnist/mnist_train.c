@@ -15,6 +15,7 @@
 #define HIDDEN_LAYER_SIZE_2 7*7
 #define OUTPUT_LAYER_SIZE OUTPUT_SIZE
 
+// Training parameters
 #define TRAINING_DATA_COUNT 60000
 #define TRAINING_PARAMETER 0.01
 

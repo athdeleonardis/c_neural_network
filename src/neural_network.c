@@ -85,11 +85,9 @@ void neural_network_layers_randomize(neural_network_t *nn) {
     }
 }
 
-matrix_t **neural_network_evaluate(neural_network_t *nn, int n_cases, matrix_t **inputs) {
-    matrix_t **outputs = (matrix_t **)malloc(n_cases * sizeof(matrix_t *));
-
+void neural_network_evaluate(neural_network_t *nn, int n_cases, matrix_t *inputs, matrix_t *outputs) {
     for (int i = 0; i < n_cases; i++) {
-        matrix_t *output_i = inputs[i];
+        matrix_t *output_i = inputs+i;
         for (int j = 0; j < nn->hidden_layer_count + 1; j++) {
             matrix_t *old = output_i;
             output_i = matrix_multiply_add(nn->layers[j].weights, output_i, nn->layers[j].biases);
@@ -97,8 +95,6 @@ matrix_t **neural_network_evaluate(neural_network_t *nn, int n_cases, matrix_t *
             if (j)
                 matrix_delete(old);
         }
-        outputs[i] = output_i;
+        matrix_copy_o(output_i, outputs+i);
     }
-
-    return outputs;
 }

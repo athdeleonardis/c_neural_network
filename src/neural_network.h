@@ -58,12 +58,12 @@ void neural_network_print(neural_network_t *nn);
 void neural_network_layers_randomize(neural_network_t *nn);
 
 /**
- * Evaluate the inputted neural network against an array of inputs, returning an array of outputs.
+ * Evaluate the inputted neural network against an array of inputs, placing the respective outputs into the outputs array.
  * @param nn The neural network to compute the inputs against.
  * @param n_cases The number of input cases to compute.
  * @param inputs The inputs to be passed to the neural network. The length of this array should equal 'n_cases'.
- * @return The outputs of the neural network from each input, respectively. The length of this array equals 'n_cases'.
+ * @param outputs The array of matrices in which the outputs will be placed. The length of this array should equal 'n_cases'.
 */
-matrix_t **neural_network_evaluate(neural_network_t *nn, int n_cases, matrix_t **inputs);
+void neural_network_evaluate(neural_network_t *nn, int n_cases, matrix_t *inputs, matrix_t *outputs);
 
 #endif

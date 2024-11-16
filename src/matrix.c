@@ -41,6 +41,13 @@ matrix_t *matrix_create(int cols, int rows) {
     return mat;
 }
 
+void matrix_initialize_from_array(matrix_t *mat, int cols, int rows, double *array, int *offset) {
+    mat->cols = cols;
+    mat->rows = rows;
+    mat->data = array + *offset;
+    *offset += cols * rows;
+}
+
 matrix_t *matrix_copy_n(matrix_t *mat) {
     matrix_t *new_mat = matrix_create(mat->cols, mat->rows);
     for (int i = 0; i < new_mat->cols * new_mat->rows; i++)
