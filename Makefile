@@ -12,6 +12,7 @@ APP_NAMES = mnist
 DEPS=$(addprefix $(OBJ_DIR)/, $(OBJS))
 TSTS=$(addprefix $(BLD_DIR)/$(TST_DIR)/test_, $(TST_NAMES))
 APPS=$(addprefix $(BLD_DIR)/$(APP_DIR)/, $(APP_NAMES))
+MNIST_DEPS=$(addprefix $(APP_DIR)/mnist/, main.c mnist.c mnist.h mnist_train.c mnist_train.h)
 
 .PHONY: all prebuild obj test clean app
 
@@ -32,7 +33,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(SRC_DIR)/%.h
 $(BLD_DIR)/$(TST_DIR)/%: $(TST_DIR)/%.c $(DEPS)
 	$(CC) -o $@ $^ $(CFLAGS)
 
-$(BLD_DIR)/$(APP_DIR)/%: $(APP_DIR)/%.c $(DEPS)
+$(BLD_DIR)/$(APP_DIR)/mnist: $(MNIST_DEPS) $(DEPS)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:

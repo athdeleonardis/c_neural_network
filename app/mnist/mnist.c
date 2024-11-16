@@ -13,90 +13,36 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include "../src/file_load.h"
-#include "../src/error.h"
-#include "../src/matrix.h"
-#include "../src/neural_network.h"
-#include "../src/neural_network_train.h"
-#include "../src/neural_network_file.h"
-#include "../src/random.h"
+#include "../../src/file_load.h"
+#include "../../src/matrix.h"
+#include "../../src/neural_network.h"
+#include "mnist.h"
 
 #define MAGIC_NUMBER_1 2049
 #define MAGIC_NUMBER_2 2051
-#define TRAINING_DATA_COUNT 60000
 #define TEST_DATA_COUNT 10000
-#define IMAGE_WIDTH 28
 
-#define INPUT_SIZE IMAGE_WIDTH * IMAGE_WIDTH
-#define BATCH_COUNT 100
-#define BATCH_INPUT_SIZE BATCH_COUNT * INPUT_SIZE
-#define OUTPUT_DATA_SIZE 10 * 10
 #define READ_BUFFER_SIZE 128
 #define PIXEL_MAX 255.0
 
-#define INPUT_LAYER_SIZE INPUT_SIZE
-#define HIDDEN_LAYER_COUNT 2
-#define HIDDEN_LAYER_SIZE_1 14*14
-#define HIDDEN_LAYER_SIZE_2 7*7
-#define OUTPUT_LAYER_SIZE 10
-
-#define TRAINING_PARAMETER 0.01
-
-typedef struct {
-    FILE *inputs_file;
-    FILE *outputs_file;
-    int32_t num_cases;
-    int32_t index;
-    unsigned char input_data_unformatted[BATCH_INPUT_SIZE];
-    double input_data[BATCH_INPUT_SIZE];
-    matrix_t inputs[BATCH_COUNT];
-    unsigned char output_data[BATCH_COUNT];
-} mnist_handle_t;
+//
+// 'mnist.c' definitions
+//
 
 int32_t flip_endianness(int32_t value);
-mnist_handle_t mnist_handle_init(int32_t num_cases);
-void mnist_handle_close(mnist_handle_t *handle);
-void mnist_images_load(const char *filename, mnist_handle_t *handle);
-void mnist_labels_load(const char *filename, mnist_handle_t *handle);
-int mnist_has_batch(mnist_handle_t *handle);
-int mnist_load_batch(mnist_handle_t *handle);
 
-void initialize_output_data(double *data);
-void initialize_outputs(matrix_t *outputs, double *data);
-neural_network_t *initialize_neural_network();
-
-int main(int argc, char *argv) {
-    random_init();
-
-    mnist_handle_t mnist_handle = mnist_handle_init(TRAINING_DATA_COUNT);
-    mnist_images_load("datasets/mnist/train-images.idx3-ubyte", &mnist_handle);
-    mnist_labels_load("datasets/mnist/train-labels.idx1-ubyte", &mnist_handle);
-
-    double output_data[OUTPUT_DATA_SIZE];
-    initialize_output_data(output_data);
-    matrix_t outputs[10];
-    initialize_outputs(outputs, output_data);
-
-    neural_network_t *neural_network = initialize_neural_network();
-
-    printf("Training...\n");
-    while (mnist_has_batch(&mnist_handle)) {
-        int batch_size = mnist_load_batch(&mnist_handle);
-        for (int i = 0; i < batch_size; i++) {
-            neural_network_train_case(neural_network, &mnist_handle.inputs[i], &outputs[mnist_handle.output_data[i]], TRAINING_PARAMETER);
-        }
-        printf("%d\n", mnist_handle.index);
-    }
-    printf("Done!\n");
-    mnist_handle_close(&mnist_handle);
-
-    neural_network_save_dynamic(neural_network, "models/mnist.model.dynamic");
-}
+//
+// 'mnist.c' implementations
+//
 
 int32_t flip_endianness(int32_t value)
 {
     return ((value & 0x000000FF) << 24) | ((value & 0x0000FF00) << 8) | ((value & 0x00FF0000) >> 8) | ((value & 0xFF000000) >> 24); 
 } 
+
+//
+// 'mnist.h' implementations
+//
 
 mnist_handle_t mnist_handle_init(int32_t num_cases) {
     mnist_handle_t handle = {};
@@ -205,7 +151,7 @@ void initialize_outputs(matrix_t *outputs, double *data) {
 unsigned char output_to_number(matrix_t *output) {
     unsigned char number = 0;
     double highest_value = output->data[0];
-    for (int i = 1; i < OUTPUT_LAYER_SIZE; i++) {
+    for (int i = 1; i < OUTPUT_SIZE; i++) {
         double new_value = output->data[i];
         if (new_value > highest_value) {
             highest_value = new_value;
@@ -213,18 +159,4 @@ unsigned char output_to_number(matrix_t *output) {
         }
     }
     return number;
-}
-
-neural_network_t *initialize_neural_network() {
-    int hidden_layer_sizes[HIDDEN_LAYER_COUNT] = { HIDDEN_LAYER_SIZE_1, HIDDEN_LAYER_SIZE_2 };
-    char *activation_function_names[HIDDEN_LAYER_COUNT+1] = { "sigmoid", "sigmoid", "sigmoid" };
-    neural_network_t *neural_network = neural_network_create(
-        INPUT_LAYER_SIZE,
-        OUTPUT_LAYER_SIZE,
-        HIDDEN_LAYER_COUNT,
-        hidden_layer_sizes,
-        activation_function_names
-    );
-    neural_network_layers_randomize(neural_network);
-    return neural_network;
 }
