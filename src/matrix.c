@@ -44,7 +44,7 @@ matrix_t *matrix_create(int cols, int rows) {
 void matrix_initialize_from_array(matrix_t *mat, int cols, int rows, double *array, int *offset) {
     mat->cols = cols;
     mat->rows = rows;
-    mat->data = array + *offset;
+    mat->data = &array[*offset];
     *offset += cols * rows;
 }
 
@@ -56,7 +56,7 @@ matrix_t *matrix_copy_n(matrix_t *mat) {
 }
 
 void matrix_copy_o(matrix_t *mat_I, matrix_t *mat_O) {
-    cnd_make_error(mat_I->cols != mat_O->cols || mat_I->rows != mat_O->cols, "Attempting to copy matrix into incompatible matrix.");
+    cnd_make_error(mat_I->cols != mat_O->cols || mat_I->rows != mat_O->rows, "Attempting to copy matrix into incompatible matrix.");
     for (int i = 0; i < mat_I->rows * mat_I->cols; i++) {
         mat_O->data[i] = mat_I->data[i];
     }

@@ -12,7 +12,7 @@ APP_NAMES = mnist
 DEPS=$(addprefix $(OBJ_DIR)/, $(OBJS))
 TSTS=$(addprefix $(BLD_DIR)/$(TST_DIR)/test_, $(TST_NAMES))
 APPS=$(addprefix $(BLD_DIR)/$(APP_DIR)/, $(APP_NAMES))
-MNIST_DEPS=$(addprefix $(APP_DIR)/mnist/, main.c mnist.c mnist.h mnist_train.c mnist_train.h)
+MNIST_DEPS=$(addprefix $(APP_DIR)/mnist/, main.c mnist.c mnist.h mnist_train.c mnist_train.h mnist_test.c mnist_test.h)
 
 .PHONY: all prebuild obj test clean app
 

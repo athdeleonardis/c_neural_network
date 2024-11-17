@@ -19,16 +19,18 @@ typedef struct {
     int32_t num_cases;
     int32_t index;
     unsigned char input_data_unformatted[BATCH_INPUT_SIZE];
-    double input_data[BATCH_INPUT_SIZE];
+    double *input_data;
     matrix_t inputs[BATCH_COUNT];
     unsigned char output_data[BATCH_COUNT];
 } mnist_handle_t;
 
-mnist_handle_t mnist_handle_init(int32_t num_cases);
+mnist_handle_t mnist_handle_init(int32_t num_cases, double *input_data);
 void mnist_handle_close(mnist_handle_t *handle);
 void mnist_images_load(const char *filename, mnist_handle_t *handle);
 void mnist_labels_load(const char *filename, mnist_handle_t *handle);
 int mnist_has_batch(mnist_handle_t *handle);
 int mnist_load_batch(mnist_handle_t *handle);
-void initialize_output_data(double *data);
-void initialize_outputs(matrix_t *outputs, double *data);
+void mnist_reset(mnist_handle_t *handle);
+void mnist_initialize_output_data(double *data);
+void mnist_initialize_outputs(matrix_t *outputs, double *data);
+unsigned char mnist_output_to_number(matrix_t *output);

@@ -26,6 +26,11 @@
 #define MAGIC_NUMBER_2 2051
 #define PIXEL_MAX 255.0
 
+// magic number - 4 bytes, data count - 4 bytes
+#define FILE_LABEL_HEADER_SIZE 8
+// magic number - 4 bytes, data count - 4 bytes, image width - 4 bytes, image width - 4 bytes
+#define FILE_IMAGE_HEADER_SIZE 16
+
 int32_t flip_endianness(int32_t value);
 
 //
@@ -41,13 +46,13 @@ int32_t flip_endianness(int32_t value)
 // 'mnist.h' implementations
 //
 
-mnist_handle_t mnist_handle_init(int32_t num_cases) {
+mnist_handle_t mnist_handle_init(int32_t num_cases, double *input_data) {
     mnist_handle_t handle = {};
     handle.num_cases = num_cases;
+    handle.input_data = input_data;
+    int offset = 0;
     for (int i = 0; i < BATCH_COUNT; i++) {
-        handle.inputs[i].cols = 1;
-        handle.inputs[i].rows = INPUT_SIZE;
-        handle.inputs[i].data = handle.input_data + INPUT_SIZE * i;
+        matrix_initialize_from_array(&handle.inputs[i], 1, INPUT_SIZE, handle.input_data, &offset);
     }
     return handle;
 }
@@ -115,16 +120,22 @@ int mnist_load_batch(mnist_handle_t *handle) {
         num_cases = BATCH_COUNT;
     handle->index += num_cases;
 
-    fread(handle->input_data, sizeof(unsigned char), BATCH_INPUT_SIZE, handle->inputs_file);
-    fread(handle->output_data, sizeof(unsigned char), BATCH_COUNT, handle->outputs_file);
+    fread(handle->input_data_unformatted, INPUT_SIZE * sizeof(unsigned char), num_cases, handle->inputs_file);
+    fread(handle->output_data, sizeof(unsigned char), num_cases, handle->outputs_file);
 
-    for (int i = 0; i < num_cases; i++) {
-        handle->input_data[i] = handle->input_data_unformatted[i] / PIXEL_MAX;
+    for (int i = 0; i < num_cases * INPUT_SIZE; i++) {
+        handle->input_data[i] = (double)handle->input_data_unformatted[i] / PIXEL_MAX;
     }
     return num_cases;
 }
 
-void initialize_output_data(double *data) {
+void mnist_reset(mnist_handle_t *handle) {
+    handle->index = 0;
+    fseek(handle->inputs_file, FILE_IMAGE_HEADER_SIZE, SEEK_SET);
+    fseek(handle->outputs_file, FILE_LABEL_HEADER_SIZE, SEEK_SET);
+}
+
+void mnist_initialize_output_data(double *data) {
     // E.g. label 0 is represented by [1 0 0 0 0 0 0 0 0 0]
     // E.g. label 3 is represented by [0 0 0 1 0 0 0 0 0 0]
     for (int i = 0; i < OUTPUT_DATA_SIZE; i++) {
@@ -134,7 +145,7 @@ void initialize_output_data(double *data) {
     }
 }
 
-void initialize_outputs(matrix_t *outputs, double *data) {
+void mnist_initialize_outputs(matrix_t *outputs, double *data) {
     for (int i = 0; i < 10; i++) {
         outputs[i].cols = 1;
         outputs[i].rows = 10;
@@ -145,7 +156,7 @@ void initialize_outputs(matrix_t *outputs, double *data) {
 /**
  * Find the index of the inputted array which has the highest value.
 */
-unsigned char output_to_number(matrix_t *output) {
+unsigned char mnist_output_to_number(matrix_t *output) {
     unsigned char number = 0;
     double highest_value = output->data[0];
     for (int i = 1; i < OUTPUT_SIZE; i++) {
