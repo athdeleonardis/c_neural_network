@@ -6,20 +6,22 @@ OBJ_DIR=obj
 TST_DIR=test
 BLD_DIR=build
 APP_DIR=app
+MDL_DIR=models
+LOG_DIR=logs
 OBJS = random.o error.o file_load.o matrix.o neural_network.o neural_network_file.o neural_network_train.o activation_function.o
 TST_NAMES = matrix neural_network_file neural_network_evaluate neural_network_train
 APP_NAMES = mnist
 DEPS=$(addprefix $(OBJ_DIR)/, $(OBJS))
 TSTS=$(addprefix $(BLD_DIR)/$(TST_DIR)/test_, $(TST_NAMES))
 APPS=$(addprefix $(BLD_DIR)/$(APP_DIR)/, $(APP_NAMES))
-MNIST_DEPS=$(addprefix $(APP_DIR)/mnist/, main.c mnist.c mnist.h mnist_train.c mnist_train.h mnist_test.c mnist_test.h)
+MNIST_DEPS=$(addprefix $(APP_DIR)/mnist/, main.c mnist.c mnist.h mnist_train.c mnist_train.h mnist_test.c mnist_test.h mnist_full.c mnist_full.h)
 
 .PHONY: all prebuild obj test clean app
 
 all: prebuild obj test app
 
 prebuild:
-	@mkdir -p $(OBJ_DIR) $(BLD_DIR) $(BLD_DIR)/$(TST_DIR) $(BLD_DIR)/$(APP_DIR)
+	@mkdir -p $(OBJ_DIR) $(BLD_DIR) $(BLD_DIR)/$(TST_DIR) $(BLD_DIR)/$(APP_DIR) $(MDL_DIR) $(LOG_DIR)
 
 obj: prebuild $(DEPS)
 

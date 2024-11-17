@@ -6,6 +6,13 @@
 // 'mnist.h' definitions
 //
 
+#define MNIST_N_CASES_TRAINING 60000
+#define MNIST_N_CASES_TESTING 10000
+#define MNIST_DATASET_TRAINING_IMAGES "datasets/mnist/train-images.idx3-ubyte"
+#define MNIST_DATASET_TRAINING_LABELS "datasets/mnist/train-labels.idx1-ubyte"
+#define MNIST_DATASET_TESTING_IMAGES "datasets/mnist/t10k-images.idx3-ubyte"
+#define MNIST_DATASET_TESTING_LABELS "datasets/mnist/t10k-labels.idx1-ubyte"
+
 #define IMAGE_WIDTH 28
 #define INPUT_SIZE IMAGE_WIDTH * IMAGE_WIDTH
 #define BATCH_COUNT 100

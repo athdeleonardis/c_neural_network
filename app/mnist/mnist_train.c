@@ -5,7 +5,6 @@
 #include "../../src/neural_network.h"
 #include "../../src/neural_network_train.h"
 #include "../../src/neural_network_file.h"
-#include "../../src/random.h"
 
 //
 // 'mnist_train.c' definitions
