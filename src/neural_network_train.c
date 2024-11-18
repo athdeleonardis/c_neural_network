@@ -114,8 +114,8 @@ void get_eval(neural_network_t *nn, matrix_t *input, neural_network_eval_t eval)
         else
             prev_outputs = input;
 
-        matrix_multiply_o(nn->layers[i].weights, prev_outputs, &eval.layers[i].outputs);
-        matrix_add_i(&eval.layers[i].outputs, nn->layers[i].biases);
+        matrix_multiply_o(&nn->layers[i].weights, prev_outputs, &eval.layers[i].outputs);
+        matrix_add_i(&eval.layers[i].outputs, &nn->layers[i].biases);
         matrix_transpose_o(&eval.layers[i].outputs, &eval.layers[i].derivatives);
 
         matrix_apply_function_i(&eval.layers[i].outputs, nn->layers[i].activation_function.function);
@@ -138,7 +138,7 @@ void get_error(neural_network_t *nn, matrix_t *output, neural_network_eval_t eva
 
     // Hidden layer error, propogated backwards via the activation function derivative
     for (int i = nn->hidden_layer_count; i > 0; i--) {
-        matrix_multiply_o(&eval.layers[i].errors, nn->layers[i].weights, &eval.layers[i-1].errors);
+        matrix_multiply_o(&eval.layers[i].errors, &nn->layers[i].weights, &eval.layers[i-1].errors);
         matrix_multiply_scalar_i(&eval.layers[i-1].errors, &eval.layers[i-1].derivatives);
     }
 }
@@ -148,8 +148,8 @@ void get_error(neural_network_t *nn, matrix_t *output, neural_network_eval_t eva
 */
 void apply_eval(neural_network_t *nn, matrix_t *input, matrix_t *output, neural_network_eval_t eval, double p) {
     for (int k = 0; k < nn->hidden_layer_count + 1; k++) {
-        matrix_t *weights = nn->layers[k].weights;
-        matrix_t *biases = nn->layers[k].biases;
+        matrix_t *weights = &nn->layers[k].weights;
+        matrix_t *biases = &nn->layers[k].biases;
         for (int j = 0; j < weights->rows; j++) {
             for (int i = 0; i < weights->cols; i++) {
                 double output;

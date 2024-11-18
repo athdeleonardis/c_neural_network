@@ -79,8 +79,8 @@ void neural_network_save_internal_structure(FILE *file, neural_network_t *nn) {
 void neural_network_save_internal_layers(FILE *file, neural_network_t *nn) {
     for (int i = 0; i < nn->hidden_layer_count + 1; i++) {
         layer_t layer = nn->layers[i];
-        fwrite(layer.weights->data, sizeof(double), layer.weights->cols * layer.weights->rows, file);
-        fwrite(layer.biases->data, sizeof(double), layer.biases->cols * layer.biases->rows, file);
+        fwrite(layer.weights.data, sizeof(double), layer.weights.cols * layer.weights.rows, file);
+        fwrite(layer.biases.data, sizeof(double), layer.biases.cols * layer.biases.rows, file);
     }
 }
 
@@ -123,7 +123,7 @@ neural_network_t *neural_network_load_internal_structure(FILE *file) {
 void neural_network_load_internal_layers(FILE *file, neural_network_t *nn) {
     for (int i = 0; i < nn->hidden_layer_count+1; i++) {
         layer_t layer = nn->layers[i];
-        fread(layer.weights->data, sizeof(double), layer.weights->cols * layer.weights->rows, file);
-        fread(layer.biases->data, sizeof(double), layer.biases->cols * layer.biases->rows, file);
+        fread(layer.weights.data, sizeof(double), layer.weights.cols * layer.weights.rows, file);
+        fread(layer.biases.data, sizeof(double), layer.biases.cols * layer.biases.rows, file);
     }
 }

@@ -12,8 +12,8 @@
  * A hidden layer between output layers of the neural network.
 */
 typedef struct {
-    matrix_t *weights;
-    matrix_t *biases;
+    matrix_t weights;
+    matrix_t biases;
     activation_function_t activation_function;
 } layer_t;
 
@@ -40,7 +40,15 @@ typedef struct {
 neural_network_t *neural_network_create(int input_size, int output_size, int hidden_layer_count, int *hidden_layer_sizes, char **activation_functions);
 
 /**
- * Delete the inputted neural network to prevent memory leaks.
+ * Initialize the neural network's layers' weight and bias matrices from a single array.
+ * @param nn The neural network with layers to be initialized.
+ * @param data The array which will be partitioned for the neural network's weight and bias matrices.
+ * @param activation_function_names The activation function names of each of the neural network's layers.
+ */
+void neural_network_layers_from_array(neural_network_t *nn, double *data, char **activation_function_names);
+
+/**
+ * Delete the inputted neural network to prevent memory leaks. Only intended to delete neural networks allocated by 'neural_network_create'.
  * @param nn The neural network to be deleted.
 */
 void neural_network_delete(neural_network_t *nn);

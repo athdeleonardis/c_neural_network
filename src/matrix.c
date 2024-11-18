@@ -41,6 +41,14 @@ matrix_t *matrix_create(int cols, int rows) {
     return mat;
 }
 
+void matrix_create_i(matrix_t *mat, int cols, int rows) {
+    cnd_make_error(cols < 1, "Matrix cols must be >= 1");
+    cnd_make_error(rows < 1, "Matrix rows must be >= 1");
+    mat->cols = cols;
+    mat->rows = rows;
+    mat->data = (double *)malloc(cols * rows * sizeof(double));
+}
+
 void matrix_initialize_from_array(matrix_t *mat, int cols, int rows, double *array, int *offset) {
     mat->cols = cols;
     mat->rows = rows;

@@ -46,15 +46,15 @@ int main(int argc, char *argv[]) {
         (strcmp(nn1->layers[i].activation_function.name, nn2->layers[i].activation_function.name) != 0, "Saved and loaded activation functions do not match.");
     }
     for (int i = 0; i < nn1->hidden_layer_count + 1; i++) {
-        matrix_t *weights1 = nn1->layers[i].weights;
-        matrix_t *weights2 = nn2->layers[i].weights;
+        matrix_t *weights1 = &nn1->layers[i].weights;
+        matrix_t *weights2 = &nn2->layers[i].weights;
         cnd_make_error(weights1->cols != weights2->cols || weights1->rows != weights2->rows, "Saved and loaded weight matrix dimensions do not match.");
         for (int j = 0; j < weights1->cols * weights1->rows; j++) {
             cnd_make_error(weights1->data[i] != weights2->data[i], "Saved and loaded weight data do not match.");
         }
 
-        matrix_t *biases1 = nn1->layers[i].biases;
-        matrix_t *biases2 = nn2->layers[i].biases;
+        matrix_t *biases1 = &nn1->layers[i].biases;
+        matrix_t *biases2 = &nn2->layers[i].biases;
         cnd_make_error(biases1->cols != biases2->cols || biases1->rows != biases2->rows, "Saved and loaded bias matrix dimensions do not match.");
         for (int j = 0; j < biases1->cols * biases1->rows; j++) {
             cnd_make_error(biases1->data[i] != biases2->data[i], "Saved and loaded weight data do not match.");

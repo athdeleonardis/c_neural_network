@@ -28,6 +28,14 @@ typedef struct {
 matrix_t *matrix_create(int cols, int rows);
 
 /**
+ * Modify the inputted matrix to have the entered columns and rows, giving it a newly allocated data array.
+ * @param mat The matrix to be modified.
+ * @param cols The number of columns for the entered matrix.
+ * @param rows The number of rows for the entered matrix.
+ */
+void matrix_create_i(matrix_t *mat, int cols, int rows);
+
+/**
  * Initialize a matrix with the inputted columns and rows, with data from the inputted array and offset.
  * Increments the offset by the size of the array (cols * rows).
  * @param mat The matrix to be initialized.
