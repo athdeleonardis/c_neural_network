@@ -114,5 +114,6 @@ void neural_network_evaluate(neural_network_t *nn, int n_cases, matrix_t *inputs
                 matrix_delete(old);
         }
         matrix_copy_o(output_i, outputs+i);
+        matrix_delete(output_i);
     }
 }

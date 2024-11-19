@@ -30,8 +30,7 @@ void train_all_cases(neural_network_t *nn, mnist_handle_t *mh, matrix_t *outputs
 int evaluate_all_cases(neural_network_t *nn, mnist_handle_t *mh, matrix_t *outputs_calculated);
 void log_start(const char *filename);
 void log_append(const char *filename, char *str);
-void log_append_time(const char *filename, char *string_buffer, clock_t start, clock_t end);
-void log_append_total_time(const char *filename, char *string_buffer, clock_t start, clock_t end);
+void log_append_time(const char *filename, char *string_buffer, const char *label, clock_t start, clock_t end);
 
 //
 // 'mnist_full.h' implementations
@@ -84,7 +83,9 @@ void mnist_full() {
         sprintf(string_buffer, "-- Epoch %02d --\n", i);
         log_append(log_file_name, string_buffer);
 
-        clock_t start = clock();
+        // Training
+        clock_t start_epoch = clock();
+        clock_t start = start_epoch;
         if (i) {
             double training_parameter = training_parameter_calc(TRAINING_PARAMETER_INITIAL, TRAINING_PARAMETER_FINAL, max_num_correct, mnist_handle_testing.num_cases);
             train_all_cases(&neural_network, &mnist_handle_training, outputs, training_parameter);
@@ -93,16 +94,24 @@ void mnist_full() {
         else {
             log_append(log_file_name, "No training.\n");
         }
+        log_append_time(log_file_name, string_buffer, "Time taken", start, clock());
 
+        // Test against training data
+        start = clock();
         int training_cases_correct = evaluate_all_cases(&neural_network, &mnist_handle_training, outputs_calculated);
         sprintf(string_buffer, "Training dataset evaluation: %d / %d, %.01f%%\n", training_cases_correct, mnist_handle_training.num_cases, (double)100 * training_cases_correct / mnist_handle_training.num_cases);
         log_append(log_file_name, string_buffer);
+        log_append_time(log_file_name, string_buffer, "Time taken", start, clock());
+
+        // Test against testing data
+        start = clock();
         int testing_cases_correct = evaluate_all_cases(&neural_network, &mnist_handle_testing, outputs_calculated);
         sprintf(string_buffer, "Testing dataset evaluation: %d / %d, %.01f%%\n", testing_cases_correct, mnist_handle_testing.num_cases, (double)100 * testing_cases_correct / mnist_handle_testing.num_cases);
         log_append(log_file_name, string_buffer);
         clock_t end = clock();
-        log_append_time(log_file_name, string_buffer, start, end);
-        log_append_total_time(log_file_name, string_buffer, start_total, end);
+        log_append_time(log_file_name, string_buffer, "Time taken", start, end);
+        log_append_time(log_file_name, string_buffer, "Epoch time taken", start_epoch, end);
+        log_append_time(log_file_name, string_buffer, "Total time taken", start_total, end);
 
         if (testing_cases_correct > max_num_correct) {
             sprintf(string_buffer, "New best epoch. Saving neural network.\n");
@@ -178,25 +187,13 @@ void log_append(const char *filename, char *str) {
     fclose(file);
 }
 
-void log_append_time(const char *filename, char *string_buffer, clock_t start, clock_t end) {
+void log_append_time(const char *filename, char *string_buffer, const char *label, clock_t start, clock_t end) {
     int milliseconds = (end - start) * 1000 / CLOCKS_PER_SEC;
     int seconds  = (milliseconds / 1000) % 60;
     int minutes = milliseconds / 1000 / 60;
     milliseconds = milliseconds % 1000;
     FILE *file = fopen(filename, "a");
-    sprintf(string_buffer, "Epoch time taken: %dm %d.%ds\n", minutes, seconds, milliseconds);
-    fprintf(file, "%s", string_buffer);
-    printf("%s", string_buffer);
-    fclose(file);
-}
-
-void log_append_total_time(const char *filename, char *string_buffer, clock_t start, clock_t end) {
-    int milliseconds = (end - start) * 1000 / CLOCKS_PER_SEC;
-    int seconds  = (milliseconds / 1000) % 60;
-    int minutes = milliseconds / 1000 / 60;
-    milliseconds = milliseconds % 1000;
-    FILE *file = fopen(filename, "a");
-    sprintf(string_buffer, "Total time taken: %dm %d.%ds\n", minutes, seconds, milliseconds);
+    sprintf(string_buffer, "%s: %dm %d.%ds\n", label, minutes, seconds, milliseconds);
     fprintf(file, "%s", string_buffer);
     printf("%s", string_buffer);
     fclose(file);

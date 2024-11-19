@@ -8,25 +8,9 @@
 // 'neural_network_train.c' definitions
 //
 
-typedef struct {
-    matrix_t outputs;
-    matrix_t derivatives;
-    matrix_t errors;
-} neural_network_layer_eval_t;
-
-typedef struct {
-    neural_network_layer_eval_t *layers;
-    double *all_data;
-} neural_network_evaluation_t;
-
 void check_input_size(neural_network_t *nn, matrix_t *mat);
 void check_output_size(neural_network_t *nn, matrix_t *output);
-void neural_network_evaluation_initialize(neural_network_t *nn, neural_network_evaluation_t *eval);
-void set_eval_layer(neural_network_layer_eval_t *eval_layer, double *data, int array_size, int *offset);
-void del_eval(neural_network_evaluation_t eval);
-void get_eval(neural_network_t *, matrix_t *input, neural_network_evaluation_t);
-void get_error(neural_network_t *, matrix_t *output, neural_network_evaluation_t);
-void apply_eval(neural_network_t *, matrix_t *input, matrix_t *output, neural_network_evaluation_t, double p);
+void neural_network_evaluation_layer_initialize(neural_network_evaluation_layer_t *eval_layer, double *data, int array_size, int *offset);
 
 //
 // 'neural_network_train.h' implementations
@@ -38,10 +22,10 @@ void neural_network_train_case(neural_network_t *nn, matrix_t *input, matrix_t *
 
     neural_network_evaluation_t eval = {};
     neural_network_evaluation_initialize(nn, &eval);
-    get_eval(nn, input, eval);
-    get_error(nn, output, eval);
-    apply_eval(nn, input, output, eval, p);
-    del_eval(eval);
+    neural_network_evaluation_outputs(nn, input, eval);
+    neural_network_evaluation_errors(nn, output, eval);
+    neural_network_evaluation_apply(nn, input, eval, p);
+    neural_network_evaluation_delete(eval);
 }
 
 //
@@ -56,10 +40,6 @@ void check_output_size(neural_network_t *nn, matrix_t *output) {
     cnd_make_error(output->cols != 1 && output->rows != nn->output_size, "Output matrix size incompatible with neural network.\n");
 }
 
-/**
- * For each layer of the neural network, create a datastructure to store the outputs at each layer,
- * the derivatives of each output, and the errors of each output.
-*/
 void neural_network_evaluation_initialize(neural_network_t *nn, neural_network_evaluation_t *eval) {
     // For each output layer of the neural network, allocate three arrays, outputs derivatives and errors.
     int data_length = nn->output_size;
@@ -68,32 +48,29 @@ void neural_network_evaluation_initialize(neural_network_t *nn, neural_network_e
     }
     data_length *= 3;
     eval->all_data = (double *)malloc(data_length * sizeof(double));
-    eval->layers = (neural_network_layer_eval_t *)malloc((nn->hidden_layer_count + 1) * sizeof(neural_network_layer_eval_t));
+    eval->layers = (neural_network_evaluation_layer_t *)malloc((nn->hidden_layer_count + 1) * sizeof(neural_network_evaluation_layer_t));
 
-    // Partition the array 'all_data' into each 'neural_network_layer_eval_t's matrix elements.
+    // Partition the array 'all_data' into each 'neural_network_evaluation_layer_t's matrix elements.
     int i = 0;
     int data_offset = 0;
     for (; i < nn->hidden_layer_count; i++) {
-        set_eval_layer(&eval->layers[i], eval->all_data, nn->hidden_layer_sizes[i], &data_offset);
+        neural_network_evaluation_layer_initialize(&eval->layers[i], eval->all_data, nn->hidden_layer_sizes[i], &data_offset);
     }
-    set_eval_layer(&eval->layers[i], eval->all_data, nn->output_size, &data_offset);
+    neural_network_evaluation_layer_initialize(&eval->layers[i], eval->all_data, nn->output_size, &data_offset);
 }
 
-void set_eval_layer(neural_network_layer_eval_t *eval_layer, double *data, int array_size, int *offset) {
+void neural_network_evaluation_layer_initialize(neural_network_evaluation_layer_t *eval_layer, double *data, int array_size, int *offset) {
     matrix_initialize_from_array(&eval_layer->outputs, 1, array_size, data, offset);
     matrix_initialize_from_array(&eval_layer->derivatives, array_size, 1, data, offset);
     matrix_initialize_from_array(&eval_layer->errors, array_size, 1, data, offset);
 }
 
-void del_eval(neural_network_evaluation_t eval) {
+void neural_network_evaluation_delete(neural_network_evaluation_t eval) {
     free(eval.all_data);
     free(eval.layers);
 }
 
-/**
- * Get the outputs at each layer, and their respective derivatives.
-*/
-void get_eval(neural_network_t *nn, matrix_t *input, neural_network_evaluation_t eval) {
+void neural_network_evaluation_outputs(neural_network_t *nn, matrix_t *input, neural_network_evaluation_t eval) {
     matrix_t *prev_outputs;
     for (int i = 0; i < nn->hidden_layer_count + 1; i++) {
         if (i)
@@ -110,10 +87,7 @@ void get_eval(neural_network_t *nn, matrix_t *input, neural_network_evaluation_t
     }
 }
 
-/**
- * Get the error of each every output at each layer.
-*/
-void get_error(neural_network_t *nn, matrix_t *output, neural_network_evaluation_t eval) {
+void neural_network_evaluation_errors(neural_network_t *nn, matrix_t *output, neural_network_evaluation_t eval) {
     int final_layer = nn->hidden_layer_count;
     // Output layer error
     matrix_transpose_o(&eval.layers[final_layer].outputs, &eval.layers[final_layer].errors);
@@ -130,10 +104,7 @@ void get_error(neural_network_t *nn, matrix_t *output, neural_network_evaluation
     }
 }
 
-/**
- * Apply the error and output values to each weight of the neural network.
-*/
-void apply_eval(neural_network_t *nn, matrix_t *input, matrix_t *output, neural_network_evaluation_t eval, double p) {
+void neural_network_evaluation_apply(neural_network_t *nn, matrix_t *input, neural_network_evaluation_t eval, double p) {
     for (int k = 0; k < nn->hidden_layer_count + 1; k++) {
         matrix_t *weights = &nn->layers[k].weights;
         matrix_t *biases = &nn->layers[k].biases;
