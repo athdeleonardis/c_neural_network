@@ -46,14 +46,11 @@ int32_t flip_endianness(int32_t value)
 // 'mnist.h' implementations
 //
 
-mnist_handle_t mnist_handle_init(int32_t num_cases, double *input_data) {
+mnist_handle_t mnist_handle_init(int32_t num_cases, int batch_size, unsigned char *input_data_buffer) {
     mnist_handle_t handle = {};
     handle.num_cases = num_cases;
-    handle.input_data = input_data;
-    int offset = 0;
-    for (int i = 0; i < BATCH_COUNT; i++) {
-        matrix_initialize_from_array(&handle.inputs[i], 1, INPUT_SIZE, handle.input_data, &offset);
-    }
+    handle.input_data_buffer = input_data_buffer;
+    handle.batch_size = batch_size;
     return handle;
 }
 
@@ -106,25 +103,23 @@ void mnist_labels_load(const char *filename, mnist_handle_t *handle) {
     }
 }
 
-int mnist_has_batch(mnist_handle_t *handle) {
-    return handle->index < handle->num_cases;
-}
-
 /**
  * Returns the number of cases in the loaded batch.
 */
-int mnist_load_batch(mnist_handle_t *handle) {
+int mnist_load_batch(mnist_handle_t *handle, double *inputs, unsigned char *outputs) {
     // How many cases to read.
     int num_cases = handle->num_cases - handle->index;
-    if (num_cases > BATCH_COUNT)
-        num_cases = BATCH_COUNT;
+    if (num_cases == 0)
+        return 0;
+    if (num_cases > handle->batch_size)
+        num_cases = handle->batch_size;
     handle->index += num_cases;
 
-    fread(handle->input_data_unformatted, INPUT_SIZE * sizeof(unsigned char), num_cases, handle->inputs_file);
-    fread(handle->output_data, sizeof(unsigned char), num_cases, handle->outputs_file);
+    fread(handle->input_data_buffer, INPUT_SIZE * sizeof(unsigned char), num_cases, handle->inputs_file);
+    fread(outputs, sizeof(unsigned char), num_cases, handle->outputs_file);
 
     for (int i = 0; i < num_cases * INPUT_SIZE; i++) {
-        handle->input_data[i] = (double)handle->input_data_unformatted[i] / PIXEL_MAX;
+        inputs[i] = (double)handle->input_data_buffer[i] / PIXEL_MAX;
     }
     return num_cases;
 }

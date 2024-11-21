@@ -20,6 +20,7 @@
 #define OUTPUT_LAYER_SIZE OUTPUT_SIZE
 
 // Training parameters
+#define BATCH_SIZE 100
 #define TRAINING_DATA_COUNT 60000
 #define TRAINING_PARAMETER 0.001
 
@@ -31,15 +32,21 @@ void save_neural_network(neural_network_t *nn, time_t timer, int iteration, int 
 //
 
 void mnist_train(const char *model_filename, int epochs, int do_overwrite) {
-    double input_data[BATCH_COUNT * INPUT_SIZE];
-    mnist_handle_t mnist_handle = mnist_handle_init(TRAINING_DATA_COUNT, input_data);
+    unsigned char input_data_buffer[BATCH_SIZE * INPUT_SIZE];
+    mnist_handle_t mnist_handle = mnist_handle_init(TRAINING_DATA_COUNT, BATCH_SIZE, input_data_buffer);
     mnist_images_load("datasets/mnist/train-images.idx3-ubyte", &mnist_handle);
     mnist_labels_load("datasets/mnist/train-labels.idx1-ubyte", &mnist_handle);
 
-    double output_data[OUTPUT_DATA_SIZE];
-    mnist_initialize_output_data(output_data);
-    matrix_t outputs[10];
-    mnist_initialize_outputs(outputs, output_data);
+    double inputs_data[BATCH_SIZE * INPUT_SIZE];
+    matrix_t inputs[BATCH_SIZE];
+    matrix_initialize_multiple_from_array(inputs, BATCH_SIZE, 1, INPUT_SIZE, inputs_data);
+
+    double output_map_data[OUTPUT_DATA_SIZE];
+    mnist_initialize_output_data(output_map_data);
+    matrix_t output_map[10];
+    mnist_initialize_outputs(output_map, output_map_data);
+
+    unsigned char outputs[BATCH_SIZE];
 
     neural_network_t *neural_network = NULL;
     if (model_filename) {
@@ -54,14 +61,14 @@ void mnist_train(const char *model_filename, int epochs, int do_overwrite) {
     printf("Training...\n");
     for (int i = 0; i < epochs; i++) {
         printf("Iteration %d\n", i);
-        while (mnist_has_batch(&mnist_handle)) {
-            int batch_size = mnist_load_batch(&mnist_handle);
+        int batch_size;
+        while (batch_size = mnist_load_batch(&mnist_handle, inputs_data, outputs)) {
             for (int j = 0; j < batch_size; j++) {
-                unsigned char label = mnist_handle.output_data[j];
-                matrix_t *label_matrix = &outputs[label];
-                neural_network_train_case(neural_network, &mnist_handle.inputs[j], label_matrix, TRAINING_PARAMETER);
+                unsigned char label = outputs[j];
+                matrix_t *label_matrix = &output_map[label];
+                neural_network_train_case(neural_network, &inputs[j], label_matrix, TRAINING_PARAMETER);
             }
-            printf("%d ", mnist_handle.index);
+            printf("%d\r", mnist_handle.index);
             fflush(stdout);
         }
         printf("\n");

@@ -47,6 +47,16 @@ void matrix_create_i(matrix_t *mat, int cols, int rows);
 void matrix_initialize_from_array(matrix_t *mat, int cols, int rows, double *array, int *offset);
 
 /**
+ * Initialize an array of matrices with the same inputted columns and rows, with data from the inputted array.
+ * @param mat The array of matrices to be initialized.
+ * @param num_matrices The number of matrices in the array to be initialized.
+ * @param cols The columns of every matrix in the array.
+ * @param rows The rows of every matrix in the array.
+ * @param array The array of data to be partitioned between each matrix.
+ */
+void matrix_initialize_multiple_from_array(matrix_t *mat, int num_matrices, int cols, int rows, double *array);
+
+/**
  * Delete the matrix to prevent memory leaks.
  * @param mat The matrix to be deleted.
 */
