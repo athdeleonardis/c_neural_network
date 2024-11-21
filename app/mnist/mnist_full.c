@@ -9,6 +9,7 @@
 #include "../../src/neural_network.h"
 #include "../../src/neural_network_train.h"
 #include "../../src/neural_network_file.h"
+#include "../../src/error.h"
 
 //
 // 'mnist_full.c' definitions
@@ -22,24 +23,37 @@
 #define NN_ACTIVATION_FUNCTIONS { "sigmoid", "sigmoid" }
 #define NN_LAYER_DATA_SIZE ((NN_INPUT_SIZE + 1) * NN_HIDDEN_LAYER_SIZE_1 + (NN_HIDDEN_LAYER_SIZE_1 + 1) * NN_OUTPUT_SIZE)
 
-#define BATCH_SIZE 128
+#define BATCH_SIZE 100
 #define TRAINING_PARAMETER_INITIAL 0.01
 #define TRAINING_PARAMETER_FINAL 0.001
 
-#define N_THREADS 2
+#define N_THREADS 4
 
 typedef struct {
+    neural_network_t *neural_network;
+    mnist_handle_t *mnist_handle;
+    matrix_t *output_map;
+    pthread_mutex_t *mutex;
     double *inputs_data;
     matrix_t *inputs;
     unsigned char *outputs;
-    matrix_t *output_map;
-    neural_network_evaluation_t *eval;
+    neural_network_evaluation_t *evaluations;
 } storage_t;
+
+typedef struct {
+    storage_t storage;
+    int thread_num;
+    int *num_cases_correct;
+} evaluation_storage_t;
 
 neural_network_t *neural_network_init();
 double training_parameter_calc(double p_high, double p_low, int cases_correct, int total_cases);
 void train_all_cases(neural_network_t *nn, mnist_handle_t *mh, storage_t storage, double training_parameter);
-int evaluate_all_cases(neural_network_t *nn, mnist_handle_t *mh, storage_t storage);
+int evaluate_all_cases(storage_t storage);
+/**
+ * @param eval_storage_ptr Intended to be passed an 'evaluation_storage_t *'.
+ */
+void *evaluate_all_cases_thread(void *eval_storage_ptr);
 void log_start(const char *filename);
 void log_append(const char *filename, char *str);
 void log_append_time(const char *filename, char *string_buffer, const char *label, clock_t start, clock_t end);
@@ -58,7 +72,7 @@ void mnist_full() {
     char string_buffer[64];
 
     // Initialize the MNIST file handle
-    unsigned char input_data_unformated[BATCH_SIZE * INPUT_SIZE];
+    unsigned char input_data_unformated[INPUT_SIZE * BATCH_SIZE];
     mnist_handle_t mnist_handle_training = mnist_handle_init(MNIST_N_CASES_TRAINING, BATCH_SIZE, input_data_unformated);
     mnist_handle_t mnist_handle_testing = mnist_handle_init(MNIST_N_CASES_TESTING, BATCH_SIZE, input_data_unformated);
     mnist_images_load(MNIST_DATASET_TRAINING_IMAGES, &mnist_handle_training);
@@ -67,9 +81,9 @@ void mnist_full() {
     mnist_labels_load(MNIST_DATASET_TESTING_LABELS, &mnist_handle_testing);
 
     // Storage space to send mnist_handle image data to.
-    double inputs_data[BATCH_SIZE * INPUT_SIZE];
-    matrix_t inputs[BATCH_SIZE];
-    matrix_initialize_multiple_from_array(inputs, BATCH_SIZE, 1, INPUT_SIZE, inputs_data);
+    double inputs_data[INPUT_SIZE * BATCH_SIZE * N_THREADS];
+    matrix_t inputs[BATCH_SIZE * N_THREADS];
+    matrix_initialize_multiple_from_array(inputs, BATCH_SIZE * N_THREADS, 1, INPUT_SIZE, inputs_data);
 
     // A map from digit to neural network output.
     double output_map_data[OUTPUT_DATA_SIZE];
@@ -77,7 +91,7 @@ void mnist_full() {
     matrix_t output_map[OUTPUT_SIZE];
     mnist_initialize_outputs(output_map, output_map_data);
 
-    unsigned char outputs[BATCH_SIZE];
+    unsigned char outputs[BATCH_SIZE * N_THREADS];
 
     // Set up a randomized neural network.
     int hidden_layer_sizes[NN_HIDDEN_LAYER_COUNT+1] = NN_HIDDEN_LAYER_SIZES;
@@ -94,15 +108,25 @@ void mnist_full() {
     neural_network_layers_from_array(&neural_network, neural_network_layer_data, activation_function_names);
     neural_network_layers_randomize(&neural_network);
 
-    neural_network_evaluation_t eval;
-    neural_network_evaluation_initialize(&neural_network, &eval);
+    neural_network_evaluation_t evaluations[N_THREADS];
+    for (int i = 0; i < N_THREADS; i++) {
+        neural_network_evaluation_initialize(&neural_network, &evaluations[i]);
+    }
 
-    storage_t storage = {};
-    storage.inputs_data = inputs_data;
-    storage.inputs = inputs;
-    storage.outputs = outputs;
-    storage.output_map = output_map;
-    storage.eval = &eval;
+    pthread_mutex_t mutex;
+    if (pthread_mutex_init(&mutex, NULL))
+        make_error("Failed to initialize mutex.\n");
+
+    storage_t storage = {
+        .neural_network=&neural_network,
+        .mnist_handle=NULL,
+        .output_map=output_map,
+        .mutex=&mutex,
+        .inputs_data=inputs_data,
+        .inputs=inputs,
+        .outputs=outputs,
+        .evaluations=evaluations
+    };
 
     //
     // Training and evaluating
@@ -118,6 +142,7 @@ void mnist_full() {
         log_append(log_file_name, string_buffer);
 
         // Training
+        storage.mnist_handle = &mnist_handle_training;
         clock_t start_epoch = clock();
         clock_t start = start_epoch;
         if (i) {
@@ -132,14 +157,15 @@ void mnist_full() {
 
         // Test against training data
         start = clock();
-        int training_cases_correct = evaluate_all_cases(&neural_network, &mnist_handle_training, storage);
+        int training_cases_correct = evaluate_all_cases(storage);
         sprintf(string_buffer, "Training dataset evaluation: %d / %d, %.01f%%\n", training_cases_correct, mnist_handle_training.num_cases, (double)100 * training_cases_correct / mnist_handle_training.num_cases);
         log_append(log_file_name, string_buffer);
         log_append_time(log_file_name, string_buffer, "Time taken", start, clock());
 
         // Test against testing data
+        storage.mnist_handle = &mnist_handle_testing;
         start = clock();
-        int testing_cases_correct = evaluate_all_cases(&neural_network, &mnist_handle_testing, storage);
+        int testing_cases_correct = evaluate_all_cases(storage);
         sprintf(string_buffer, "Testing dataset evaluation: %d / %d, %.01f%%\n", testing_cases_correct, mnist_handle_testing.num_cases, (double)100 * testing_cases_correct / mnist_handle_testing.num_cases);
         log_append(log_file_name, string_buffer);
         clock_t end = clock();
@@ -161,7 +187,9 @@ void mnist_full() {
         }
     }
 
-    neural_network_evaluation_delete(eval);
+    for (int i = 0; i < N_THREADS; i++) {
+        neural_network_evaluation_delete(evaluations[i]);
+    }
     mnist_handle_close(&mnist_handle_training);
     mnist_handle_close(&mnist_handle_testing);
 }
@@ -183,9 +211,9 @@ void train_all_cases(neural_network_t *nn, mnist_handle_t *mh, storage_t storage
             unsigned char label = storage.outputs[i];
             matrix_t *output = &storage.output_map[label];
             //neural_network_train_case(nn, mh->inputs+i, output, training_parameter);
-            neural_network_evaluation_outputs(nn, storage.inputs+i, *storage.eval);
-            neural_network_evaluation_errors(nn, output, *storage.eval);
-            neural_network_evaluation_apply(nn, storage.inputs+i, *storage.eval, training_parameter);
+            neural_network_evaluation_outputs(nn, storage.inputs+i, *storage.evaluations);
+            neural_network_evaluation_errors(nn, output, *storage.evaluations);
+            neural_network_evaluation_apply(nn, storage.inputs+i, *storage.evaluations, training_parameter);
         }
         printf("Trained: %d / %d\r", mh->index, mh->num_cases);
         fflush(stdout);
@@ -195,22 +223,63 @@ void train_all_cases(neural_network_t *nn, mnist_handle_t *mh, storage_t storage
 /**
  * @return The number of cases correctly classified.
 */
-int evaluate_all_cases(neural_network_t *nn, mnist_handle_t *mh, storage_t storage) {
+int evaluate_all_cases(storage_t storage) {
     int num_cases_correct = 0;
-    mnist_reset(mh);
-    int num_cases;
-    while (num_cases = mnist_load_batch(mh, storage.inputs_data, storage.outputs)) {
-        //neural_network_evaluate(nn, num_cases, mh->inputs, outputs_calculated);
-        for (int i = 0; i < num_cases; i++) {
-            neural_network_evaluation_outputs(nn, storage.inputs+i, *storage.eval);
-            unsigned char label = storage.outputs[i];
-            unsigned char label_calculated = mnist_output_to_number(&storage.eval->layers[nn->hidden_layer_count].outputs);
-            num_cases_correct += label == label_calculated;
-        }
-        printf("Tested: %d / %d\r", mh->index, mh->num_cases);
-        fflush(stdout);
+    mnist_reset(storage.mnist_handle);
+
+    pthread_t thread_ids[N_THREADS];
+    evaluation_storage_t evaluation_storages[N_THREADS];
+    int thread_num_correct[N_THREADS];
+    for (int i = 0; i < N_THREADS; i++) {
+        storage_t *thread_storage = &evaluation_storages[i].storage;
+        thread_storage->neural_network=storage.neural_network;
+        thread_storage->mnist_handle=storage.mnist_handle;
+        thread_storage->output_map=storage.output_map;
+        thread_storage->mutex=storage.mutex;
+        thread_storage->inputs_data=storage.inputs_data + i*INPUT_SIZE*BATCH_SIZE;
+        thread_storage->inputs=storage.inputs + i*BATCH_SIZE;
+        thread_storage->outputs=storage.outputs + i*BATCH_SIZE;
+        thread_storage->evaluations=storage.evaluations + i;
+        evaluation_storages[i].thread_num = i;
+        evaluation_storages[i].num_cases_correct = &thread_num_correct[i];
+        if (pthread_create(&thread_ids[i], NULL, evaluate_all_cases_thread, &evaluation_storages[i]))
+            make_error("Couldn't create thread.\n");
     }
+    int num_threads_complete = 0;
+    while (num_threads_complete < N_THREADS) {
+        pthread_join(thread_ids[num_threads_complete], NULL);
+        printf("Joined with thread %d      \n", num_threads_complete);
+        num_cases_correct += thread_num_correct[num_threads_complete];
+        num_threads_complete++;
+    }
+    printf("                              \r");
     return num_cases_correct;
+}
+
+void *evaluate_all_cases_thread(void *eval_storage_ptr) {
+    evaluation_storage_t *eval_storage = (evaluation_storage_t *)(eval_storage_ptr);
+    storage_t *storage = &eval_storage->storage;
+    int batch_size;
+    int *num_cases_correct = eval_storage->num_cases_correct;
+    *num_cases_correct = 0;
+    while (1) {
+        pthread_mutex_lock(storage->mutex);
+        batch_size = mnist_load_batch(storage->mnist_handle, storage->inputs_data, storage->outputs);
+        pthread_mutex_unlock(storage->mutex);
+        if (!batch_size)
+            return NULL;
+        for (int i = 0; i < batch_size; i++) {
+            neural_network_evaluation_outputs(storage->neural_network, storage->inputs+i, *storage->evaluations);
+            unsigned char label = storage->outputs[i];
+            unsigned char label_calculated = mnist_output_to_number(&storage->evaluations->layers[storage->neural_network->hidden_layer_count].outputs);
+            *num_cases_correct += label == label_calculated;
+        }
+        if (eval_storage->thread_num == 0) {
+            printf("Tested: %d / %d\r", storage->mnist_handle->index, storage->mnist_handle->num_cases);
+            fflush(stdout);
+        }
+    }
+    return NULL;
 }
 
 void log_start(const char *filename) {

@@ -36,7 +36,7 @@ $(BLD_DIR)/$(TST_DIR)/%: $(TST_DIR)/%.c $(DEPS)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 $(BLD_DIR)/$(APP_DIR)/mnist: $(MNIST_DEPS) $(DEPS)
-	$(CC) -o $@ $^ $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS) -lpthread
 
 clean:
 	rm -f -r $(OBJ_DIR) $(BLD_DIR)
