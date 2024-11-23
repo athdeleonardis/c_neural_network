@@ -30,7 +30,7 @@ void thread_wrapper_join(thread_wrapper_t *thread_wrapper) {
 #endif
 #ifdef UNIX
   if (pthread_join(thread_wrapper->unix_pthread, NULL))
-    make_error("Failed to join with thread.\n")
+    make_error("Failed to join with thread.\n");
 #endif
 }
 

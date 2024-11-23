@@ -36,7 +36,6 @@ void mnist_train(const char *model_filename, int epochs, int do_overwrite) {
     mnist_handle_t mnist_handle = mnist_handle_init(TRAINING_DATA_COUNT, BATCH_SIZE, input_data_buffer);
     mnist_images_load("datasets/mnist/train-images.idx3-ubyte", &mnist_handle);
     mnist_labels_load("datasets/mnist/train-labels.idx1-ubyte", &mnist_handle);
-    printf("%d\n", mnist_handle.index);
 
     double inputs_data[BATCH_SIZE * INPUT_SIZE];
     matrix_t inputs[BATCH_SIZE];

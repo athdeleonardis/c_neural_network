@@ -1,4 +1,4 @@
-#define WINDOWS
+#define UNIX
 
 #ifdef WINDOWS
   #include <windows.h>
