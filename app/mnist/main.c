@@ -23,7 +23,7 @@ void check_args(cmd_args_t cmd_args);
 int arg_matches(const char *arg, const char *arg1, const char *arg2);
 
 int main(int argc, char *argv[]) {
-    cmd_args_t cmd_args = {};
+    cmd_args_t cmd_args = { 0 };
     cmd_args.epochs = 1;
     int argi = 1;
     while (argi < argc) {

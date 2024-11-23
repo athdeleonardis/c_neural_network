@@ -20,7 +20,7 @@ void neural_network_train_case(neural_network_t *nn, matrix_t *input, matrix_t *
     check_input_size(nn, input);
     check_output_size(nn, output);
 
-    neural_network_evaluation_t eval = {};
+    neural_network_evaluation_t eval;
     neural_network_evaluation_initialize(nn, &eval);
     neural_network_evaluation_outputs(nn, input, eval);
     neural_network_evaluation_errors(nn, output, eval);

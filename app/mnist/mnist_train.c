@@ -36,6 +36,7 @@ void mnist_train(const char *model_filename, int epochs, int do_overwrite) {
     mnist_handle_t mnist_handle = mnist_handle_init(TRAINING_DATA_COUNT, BATCH_SIZE, input_data_buffer);
     mnist_images_load("datasets/mnist/train-images.idx3-ubyte", &mnist_handle);
     mnist_labels_load("datasets/mnist/train-labels.idx1-ubyte", &mnist_handle);
+    printf("%d\n", mnist_handle.index);
 
     double inputs_data[BATCH_SIZE * INPUT_SIZE];
     matrix_t inputs[BATCH_SIZE];
@@ -60,7 +61,7 @@ void mnist_train(const char *model_filename, int epochs, int do_overwrite) {
     time_t timer = time(NULL);
     printf("Training...\n");
     for (int i = 0; i < epochs; i++) {
-        printf("Iteration %d\n", i);
+        printf("Epoch %d\n", i+1);
         int batch_size;
         while (batch_size = mnist_load_batch(&mnist_handle, inputs_data, outputs)) {
             for (int j = 0; j < batch_size; j++) {
@@ -98,19 +99,20 @@ neural_network_t *initialize_neural_network() {
 }
 
 void save_neural_network(neural_network_t *nn, time_t timer, int epoch, int do_overwrite) {
-    char filename[64];
+    char filename[100];
     int offset = 13;
     strncpy(filename, "models/mnist-", 13);
 
     // timestamp
     struct tm* tm_info;
     tm_info = localtime(&timer);
-    offset += strftime(filename+offset, 26, "%Y-%m-%d-%H:%M:%S", tm_info);
+    offset += strftime(filename+offset, 36, "TimeStamp(%Y-%m-%d-%H-%M-%S)", tm_info);
 
     // epoch, only labelled if not overwriting
     if (!do_overwrite)
-        offset += sprintf(filename+offset, "-%d", epoch);
+        offset += sprintf(filename+offset, "-Epoch(%d)", epoch+1);
 
     strcpy(filename+offset, ".model.dynamic");
+    printf("Saving to file '%s'.\n", filename);
     neural_network_save_dynamic(nn, filename);
 }

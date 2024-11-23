@@ -1,10 +1,6 @@
 #include "../src/matrix.h"
 #include <stdio.h>
 
-int int_printer(int n) {
-    printf("%d ", n);
-}
-
 matrix_t *matrix_from_cmd(const char *name) {
     printf("Enter cols and rows of %s: ", name);
     int cols;

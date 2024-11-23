@@ -41,6 +41,9 @@ activation_function_t activation_function_get(const char *name) {
         return af;
     }
     make_error("Activation function does not exist");
+    // To get rid of warning
+    activation_function_t ret = { 0 };
+    return ret;
 }
 
 void activation_function_copy(activation_function_t src, activation_function_t *dest) {

@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include "../../src/file_load.h"
 #include "../../src/matrix.h"
 #include "../../src/neural_network.h"
@@ -47,7 +48,7 @@ int32_t flip_endianness(int32_t value)
 //
 
 mnist_handle_t mnist_handle_init(int32_t num_cases, int batch_size, unsigned char *input_data_buffer) {
-    mnist_handle_t handle = {};
+    mnist_handle_t handle = { 0 };
     handle.num_cases = num_cases;
     handle.input_data_buffer = input_data_buffer;
     handle.batch_size = batch_size;

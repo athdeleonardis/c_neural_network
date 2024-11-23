@@ -104,7 +104,7 @@ neural_network_t *neural_network_load_internal_structure(FILE *file) {
     int *hidden_layer_sizes = (int *)malloc(hidden_layer_count * sizeof(int));
     fread(hidden_layer_sizes, sizeof(int), hidden_layer_count, file);
 
-    char **activation_function_names = (char **)malloc(hidden_layer_count * sizeof(char *));
+    char **activation_function_names = (char **)malloc((hidden_layer_count + 1) * sizeof(char *));
     for (int i = 0; i < hidden_layer_count + 1; i++) {
         activation_function_names[i] = (char *)malloc(ACTIVATION_FUNCTION_NAME_SIZE * sizeof(char));
         fread(activation_function_names[i], sizeof(char), ACTIVATION_FUNCTION_NAME_SIZE, file);
