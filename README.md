@@ -20,12 +20,12 @@ You can generate your build system of choice using CMake. E.g.
 
 For examples on how the library is used, you can look through
 - The test files located in the folder 'test'
-- The example apps located in the foler 'app'
-  | The app 'mnist' can be used to train and test neural network files against the MNIST dataset,
-  | a popular example dataset in AI, where the inputs are 28x28 pixel images of handwritten digits, and outputs are the digit drawn in the image.
-  | The training and testing datasets contain 60,000 and 10,000 cases respectively.
-  | Read about the mnist dataset and it's format here:
-  | https://yann.lecun.com/exdb/mnist/
+- The example apps located in the folder 'app'
+  > The app 'mnist' can be used to train and test neural network files against the MNIST dataset,
+  > a popular example dataset in AI, where the inputs are 28x28 pixel images of handwritten digits, and outputs are the digit drawn in the image. \
+  > The training and testing datasets contain 60,000 and 10,000 cases respectively. \
+  > Read about the mnist dataset and it's format here: \
+  > https://yann.lecun.com/exdb/mnist/
 
 ## License
 
