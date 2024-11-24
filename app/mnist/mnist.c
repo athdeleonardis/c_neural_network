@@ -1,12 +1,4 @@
 /**
- * This is an application that does the following:
- * 1. Loads the mnist training and testing datasets.
- * 2. Trains a randomly generated neural network on the mnist training dataset.
- * 3. Writes the evaluation of the neural network on the training and testing datasets to a file.
- * 4. Saves the neural network to a file.
-*/
-
-/**
  * Read about the mnist dataset and it's format here:
  * https://yann.lecun.com/exdb/mnist/
 */
