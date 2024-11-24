@@ -1,5 +1,3 @@
-#define UNIX
-
 #ifdef WINDOWS
   #include <windows.h>
 #endif
